@@ -10,6 +10,23 @@ import { Reveal } from './Reveal'
 /** Error text is resolved at render time so it follows the selected language. */
 type ErrorKey = 'name' | 'message' | 'tooLong' | 'generic'
 
+/**
+ * Guests see a friendly message, but the real reason goes to the console so the
+ * database can be diagnosed without redeploying.
+ */
+function reportFailure(action: string, cause: unknown): void {
+  const detail =
+    cause && typeof cause === 'object'
+      ? Object.fromEntries(
+          (['message', 'code', 'details', 'hint'] as const)
+            .map((key) => [key, (cause as Record<string, unknown>)[key]])
+            .filter(([, value]) => value !== undefined),
+        )
+      : cause
+
+  console.error(`[guestbook] failed to ${action}:`, detail)
+}
+
 export function Guestbook() {
   const { t, lang } = useLanguage()
 
@@ -33,7 +50,8 @@ export function Guestbook() {
       .then((data) => {
         if (active) setWishes(data)
       })
-      .catch(() => {
+      .catch((cause: unknown) => {
+        reportFailure('load wishes', cause)
         if (active) setErrorKey('generic')
       })
       .finally(() => {
@@ -85,7 +103,8 @@ export function Guestbook() {
       setSuccess(true)
       if (successTimer.current) window.clearTimeout(successTimer.current)
       successTimer.current = window.setTimeout(() => setSuccess(false), 5000)
-    } catch {
+    } catch (cause: unknown) {
+      reportFailure('post wish', cause)
       setErrorKey('generic')
     } finally {
       setSubmitting(false)

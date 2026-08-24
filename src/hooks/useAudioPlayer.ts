@@ -10,16 +10,20 @@ function readStoredMuted(): boolean {
   }
 }
 
+/** Only real interactions count as user activation; scrolling does not. */
+const ARMING_EVENTS: (keyof WindowEventMap)[] = ['pointerdown', 'touchend', 'keydown']
+
 /**
- * Background music that respects browser autoplay rules: playback is armed on
- * the visitor's first interaction (tap, click, key, scroll) unless they have
- * previously chosen to mute.
+ * Background music that respects browser autoplay rules: the track is armed on
+ * the visitor's first interaction anywhere on the page, unless they muted it on
+ * an earlier visit.
  */
 export function useAudioPlayer(src: string) {
   const audioRef = useRef<HTMLAudioElement | null>(null)
-  const [muted, setMuted] = useState<boolean>(readStoredMuted)
   const [playing, setPlaying] = useState(false)
   const [failed, setFailed] = useState(false)
+  /** The visitor's preference, which outlives any blocked play attempt. */
+  const [wantsSound, setWantsSound] = useState(() => !readStoredMuted())
 
   useEffect(() => {
     const audio = new Audio(src)
@@ -29,16 +33,17 @@ export function useAudioPlayer(src: string) {
     audioRef.current = audio
 
     const onError = () => setFailed(true)
-    const onPlay = () => setPlaying(true)
+    // "playing" fires once audio truly flows, unlike "play" which only means it was requested.
+    const onPlaying = () => setPlaying(true)
     const onPause = () => setPlaying(false)
 
     audio.addEventListener('error', onError)
-    audio.addEventListener('play', onPlay)
+    audio.addEventListener('playing', onPlaying)
     audio.addEventListener('pause', onPause)
 
     return () => {
       audio.removeEventListener('error', onError)
-      audio.removeEventListener('play', onPlay)
+      audio.removeEventListener('playing', onPlaying)
       audio.removeEventListener('pause', onPause)
       audio.pause()
       audio.src = ''
@@ -48,53 +53,42 @@ export function useAudioPlayer(src: string) {
 
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, muted ? '1' : '0')
+      localStorage.setItem(STORAGE_KEY, wantsSound ? '0' : '1')
     } catch {
       // Storage is optional — the current session still behaves correctly.
     }
-  }, [muted])
+  }, [wantsSound])
 
-  // Arm playback on the first gesture, which is when autoplay policies allow it.
+  // Retries on every gesture until playback sticks, then tears itself down.
   useEffect(() => {
-    if (muted) return
+    if (!wantsSound || playing || failed) return
 
-    let done = false
-    const start = () => {
-      if (done) return
-      const audio = audioRef.current
-      if (!audio) return
-      audio.play().then(
-        () => {
-          done = true
-          detach()
-        },
-        () => {
-          // Still blocked; keep listening for another gesture.
-        },
-      )
+    const attempt = () => {
+      void audioRef.current?.play().catch(() => undefined)
     }
 
-    const events: (keyof WindowEventMap)[] = ['pointerdown', 'keydown', 'touchstart', 'scroll']
-    const detach = () => events.forEach((event) => window.removeEventListener(event, start))
-    events.forEach((event) => window.addEventListener(event, start, { passive: true }))
+    ARMING_EVENTS.forEach((event) => window.addEventListener(event, attempt, { passive: true }))
+    attempt()
 
-    start()
-    return detach
-  }, [muted])
+    return () => {
+      ARMING_EVENTS.forEach((event) => window.removeEventListener(event, attempt))
+    }
+  }, [wantsSound, playing, failed])
 
+  /** Keyed off what is audible, so a first tap can never pause silence. */
   const toggle = useCallback(() => {
     const audio = audioRef.current
-    setMuted((prev) => {
-      const next = !prev
-      if (!audio) return next
-      if (next) {
-        audio.pause()
-      } else {
-        void audio.play().catch(() => undefined)
-      }
-      return next
-    })
-  }, [])
+    if (!audio) return
 
-  return { muted, playing, failed, toggle }
+    if (playing) {
+      audio.pause()
+      setWantsSound(false)
+      return
+    }
+
+    setWantsSound(true)
+    void audio.play().catch(() => undefined)
+  }, [playing])
+
+  return { playing, failed, toggle }
 }

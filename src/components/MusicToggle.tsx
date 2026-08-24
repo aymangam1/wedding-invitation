@@ -4,9 +4,10 @@ import { useLanguage } from '../i18n/LanguageContext'
 
 export function MusicToggle() {
   const { t } = useLanguage()
-  const { muted, playing, failed, toggle } = useAudioPlayer(wedding.music.src)
+  const { playing, failed, toggle } = useAudioPlayer(wedding.music.src)
 
-  const label = failed ? t.music.unavailable : muted ? t.music.play : t.music.mute
+  const soundOn = playing && !failed
+  const label = failed ? t.music.unavailable : soundOn ? t.music.mute : t.music.play
 
   return (
     <button
@@ -15,13 +16,13 @@ export function MusicToggle() {
       disabled={failed}
       aria-label={label}
       title={label}
-      aria-pressed={!muted}
+      aria-pressed={soundOn}
       className="fixed bottom-5 z-50 flex h-12 w-12 items-center justify-center rounded-full border border-gold-300/80 bg-ivory/90 text-gold-600 shadow-soft backdrop-blur transition hover:bg-gold-200/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold-500 disabled:cursor-not-allowed disabled:opacity-50 ltr:right-4 rtl:left-4 sm:h-14 sm:w-14"
     >
-      {playing && !muted && (
+      {soundOn && (
         <span aria-hidden="true" className="absolute inset-0 animate-pulseRing rounded-full border border-gold-300" />
       )}
-      {muted || failed ? <SpeakerOffIcon /> : <SpeakerOnIcon />}
+      {soundOn ? <SpeakerOnIcon /> : <SpeakerOffIcon />}
     </button>
   )
 }

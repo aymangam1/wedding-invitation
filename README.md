@@ -68,24 +68,26 @@ VITE_SUPABASE_ANON_KEY=eyJhbGciOi...
 
 الموقع منشور على Cloudflare Pages ومربوط بدومين `ayman-gamal.com`.
 
-### Cloudflare Pages (المستخدم حاليًا)
+### Cloudflare Workers (المستخدم حاليًا)
 
-1. من لوحة Cloudflare: **Workers & Pages → Create → Pages → Connect to Git**.
-2. اختر مستودع `aymangam1/wedding-invitation` والفرع `main`.
-3. إعدادات البناء:
-   - Framework preset: **Vite**
-   - Build command: `npm run build`
-   - Build output directory: `dist`
-4. أضف متغيّرات البيئة `VITE_SUPABASE_URL` و `VITE_SUPABASE_ANON_KEY` (لبيئة Production و Preview).
-5. بعد أول نشر: **Custom domains → Set up a custom domain** واكتب `ayman-gamal.com`. لأن الدومين على Cloudflare أصلاً، سجلات DNS تُضاف تلقائيًا.
+المشروع مربوط بمستودع GitHub، وأي `git push` على `main` يعيد النشر تلقائيًا.
 
-بعد كده أي `git push` على `main` يعيد النشر تلقائيًا.
+إعدادات البناء في لوحة Cloudflare:
 
-للنشر اليدوي من الجهاز بدون ربط Git:
+- Build command: `npm run build`
+- Deploy command: `npx wrangler deploy`
+
+ملف [`wrangler.jsonc`](wrangler.jsonc) هو اللي يحدّد إن مجلد `dist` يُنشر كأصول ثابتة (Static Assets). بدونه يحاول wrangler اكتشاف إعدادات Vite تلقائيًا ويفشل النشر.
+
+متغيّرات البيئة `VITE_SUPABASE_URL` و `VITE_SUPABASE_ANON_KEY` تُضاف من **Settings → Variables and Secrets** لبيئتي Production و Preview، ثم **Retry deployment**.
+
+الدومين يُربط من **Settings → Domains & Routes → Add → Custom domain** وتكتب `ayman-gamal.com`. لأن الدومين على Cloudflare أصلاً، سجلات DNS تُضاف تلقائيًا.
+
+للنشر اليدوي من الجهاز (يحتاج Node 22 أو أحدث لأن wrangler يطلبه):
 
 ```bash
 npm run build
-npx wrangler pages deploy dist --project-name=wedding-invitation
+npx wrangler deploy
 ```
 
 ### Vercel

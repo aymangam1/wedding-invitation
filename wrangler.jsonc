@@ -1,0 +1,11 @@
+{
+  // Explicit config so `wrangler deploy` uploads the built site as Worker
+  // static assets instead of trying to auto-configure a Vite framework build.
+  "name": "wedding-invitation",
+  "compatibility_date": "2026-08-24",
+  "assets": {
+    "directory": "./dist/",
+    // Single page site: serve index.html for any unknown path.
+    "not_found_handling": "single-page-application"
+  }
+}

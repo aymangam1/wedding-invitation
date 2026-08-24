@@ -1,29 +1,18 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-const STORAGE_KEY = 'wedding:music-muted'
-
-function readStoredMuted(): boolean {
-  try {
-    return localStorage.getItem(STORAGE_KEY) === '1'
-  } catch {
-    return false
-  }
-}
-
 /** Only real interactions count as user activation; scrolling does not. */
 const ARMING_EVENTS: (keyof WindowEventMap)[] = ['pointerdown', 'touchend', 'keydown']
 
 /**
- * Background music that respects browser autoplay rules: the track is armed on
- * the visitor's first interaction anywhere on the page, unless they muted it on
- * an earlier visit.
+ * Background music that greets every visit: playback starts as early as the
+ * browser permits, which is the visitor's first interaction anywhere on the
+ * page. Muting is deliberately not remembered, so each visit opens with music.
  */
 export function useAudioPlayer(src: string) {
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const [playing, setPlaying] = useState(false)
   const [failed, setFailed] = useState(false)
-  /** The visitor's preference, which outlives any blocked play attempt. */
-  const [wantsSound, setWantsSound] = useState(() => !readStoredMuted())
+  const [wantsSound, setWantsSound] = useState(true)
 
   useEffect(() => {
     const audio = new Audio(src)
@@ -50,14 +39,6 @@ export function useAudioPlayer(src: string) {
       audioRef.current = null
     }
   }, [src])
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, wantsSound ? '0' : '1')
-    } catch {
-      // Storage is optional — the current session still behaves correctly.
-    }
-  }, [wantsSound])
 
   // Retries on every gesture until playback sticks, then tears itself down.
   useEffect(() => {

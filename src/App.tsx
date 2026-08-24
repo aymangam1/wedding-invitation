@@ -1,7 +1,8 @@
 import { Countdown } from './components/Countdown'
 import { EventDetails } from './components/EventDetails'
 import { Footer } from './components/Footer'
-import { Gallery } from './components/Gallery'
+// Gallery stays disabled until the couple photos are ready.
+// import { Gallery } from './components/Gallery'
 import { Guestbook } from './components/Guestbook'
 import { Hero } from './components/Hero'
 import { LanguageToggle } from './components/LanguageToggle'
@@ -22,7 +23,7 @@ export default function App() {
         <EventDetails />
         <SectionSeparator />
         <Venue />
-        <Gallery />
+        {/* <Gallery /> */}
         <SectionSeparator />
         <Guestbook />
         <SectionSeparator />

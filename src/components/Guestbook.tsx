@@ -11,20 +11,26 @@ import { Reveal } from './Reveal'
 type ErrorKey = 'name' | 'message' | 'tooLong' | 'generic'
 
 /**
- * Guests see a friendly message, but the real reason goes to the console so the
- * database can be diagnosed without redeploying.
+ * Guests see a friendly message; the database reason is logged and returned so
+ * it can be shown in small print, which is the only way to diagnose a
+ * misconfigured key or table without opening developer tools.
  */
-function reportFailure(action: string, cause: unknown): void {
-  const detail =
+function reportFailure(action: string, cause: unknown): string | null {
+  const fields =
     cause && typeof cause === 'object'
       ? Object.fromEntries(
           (['message', 'code', 'details', 'hint'] as const)
             .map((key) => [key, (cause as Record<string, unknown>)[key]])
             .filter(([, value]) => value !== undefined),
         )
-      : cause
+      : { message: String(cause) }
 
-  console.error(`[guestbook] failed to ${action}:`, detail)
+  console.error(`[guestbook] failed to ${action}:`, fields)
+
+  const code = typeof fields.code === 'string' ? `${fields.code}: ` : ''
+  const message = typeof fields.message === 'string' ? fields.message : null
+
+  return message ? `${code}${message}` : null
 }
 
 export function Guestbook() {
@@ -36,6 +42,7 @@ export function Guestbook() {
   const [message, setMessage] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [errorKey, setErrorKey] = useState<ErrorKey | null>(null)
+  const [errorDetail, setErrorDetail] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const successTimer = useRef<number | null>(null)
 
@@ -55,8 +62,11 @@ export function Guestbook() {
         if (active) setWishes(data)
       })
       .catch((cause: unknown) => {
-        reportFailure('load wishes', cause)
-        if (active) setErrorKey('generic')
+        const detail = reportFailure('load wishes', cause)
+        if (active) {
+          setErrorKey('generic')
+          setErrorDetail(detail)
+        }
       })
       .finally(() => {
         if (active) setLoading(false)
@@ -84,6 +94,8 @@ export function Guestbook() {
     const trimmedName = name.trim()
     const trimmedMessage = message.trim()
 
+    setErrorDetail(null)
+
     if (trimmedName.length < 2) {
       setErrorKey('name')
       return
@@ -108,7 +120,7 @@ export function Guestbook() {
       if (successTimer.current) window.clearTimeout(successTimer.current)
       successTimer.current = window.setTimeout(() => setSuccess(false), 5000)
     } catch (cause: unknown) {
-      reportFailure('post wish', cause)
+      setErrorDetail(reportFailure('post wish', cause))
       setErrorKey('generic')
     } finally {
       setSubmitting(false)
@@ -172,16 +184,21 @@ export function Guestbook() {
 
               <AnimatePresence mode="wait">
                 {errorText && (
-                  <motion.p
+                  <motion.div
                     key="error"
                     initial={{ opacity: 0, y: -6 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0 }}
                     role="alert"
-                    className="text-sm font-semibold text-blush-500"
+                    className="sm:text-end"
                   >
-                    {errorText}
-                  </motion.p>
+                    <p className="text-sm font-semibold text-blush-500">{errorText}</p>
+                    {errorDetail && (
+                      <p className="mt-1 max-w-xs break-words text-[11px] text-ink/40" dir="ltr">
+                        {errorDetail}
+                      </p>
+                    )}
+                  </motion.div>
                 )}
                 {!errorText && success && (
                   <motion.p

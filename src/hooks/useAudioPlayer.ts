@@ -12,7 +12,8 @@ export function useAudioPlayer(src: string) {
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const [playing, setPlaying] = useState(false)
   const [failed, setFailed] = useState(false)
-  const [wantsSound, setWantsSound] = useState(true)
+  /** Arming ends at the first successful start, after which a pause is a real choice. */
+  const hasPlayed = useRef(false)
 
   useEffect(() => {
     const audio = new Audio(src)
@@ -23,7 +24,10 @@ export function useAudioPlayer(src: string) {
 
     const onError = () => setFailed(true)
     // "playing" fires once audio truly flows, unlike "play" which only means it was requested.
-    const onPlaying = () => setPlaying(true)
+    const onPlaying = () => {
+      hasPlayed.current = true
+      setPlaying(true)
+    }
     const onPause = () => setPlaying(false)
 
     audio.addEventListener('error', onError)
@@ -40,9 +44,10 @@ export function useAudioPlayer(src: string) {
     }
   }, [src])
 
-  // Retries on every gesture until playback sticks, then tears itself down.
+  // Retries on every gesture until playback sticks, then tears itself down for good:
+  // resuming after that would fight the visitor pausing from their lock screen.
   useEffect(() => {
-    if (!wantsSound || playing || failed) return
+    if (playing || failed || hasPlayed.current) return
 
     const attempt = () => {
       void audioRef.current?.play().catch(() => undefined)
@@ -54,7 +59,7 @@ export function useAudioPlayer(src: string) {
     return () => {
       ARMING_EVENTS.forEach((event) => window.removeEventListener(event, attempt))
     }
-  }, [wantsSound, playing, failed])
+  }, [playing, failed])
 
   /** Keyed off what is audible, so a first tap can never pause silence. */
   const toggle = useCallback(() => {
@@ -63,11 +68,9 @@ export function useAudioPlayer(src: string) {
 
     if (playing) {
       audio.pause()
-      setWantsSound(false)
       return
     }
 
-    setWantsSound(true)
     void audio.play().catch(() => undefined)
   }, [playing])
 

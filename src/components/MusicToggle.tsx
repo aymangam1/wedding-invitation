@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { wedding } from '../config'
 import { useAudioPlayer } from '../hooks/useAudioPlayer'
 import { useLanguage } from '../i18n/LanguageContext'
@@ -7,11 +7,15 @@ import { useLanguage } from '../i18n/LanguageContext'
 export function MusicToggle() {
   const { t } = useLanguage()
   const { playing, failed, toggle } = useAudioPlayer(wedding.music.src)
-  /** Once the visitor has used the button, nudging them again would only nag. */
+  /** Once the visitor has heard or dismissed the music, nudging again would only nag. */
   const [nudged, setNudged] = useState(false)
 
   const soundOn = playing && !failed
   const label = failed ? t.music.unavailable : soundOn ? t.music.mute : t.music.play
+
+  useEffect(() => {
+    if (playing) setNudged(true)
+  }, [playing])
 
   const start = () => {
     setNudged(true)

@@ -1,0 +1,105 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-cream text-ink antialiased;
+    overflow-x: hidden;
+  }
+
+  html[lang='ar'] body {
+    @apply font-arabic;
+  }
+
+  html[lang='en'] body {
+    @apply font-display;
+  }
+
+  ::selection {
+    @apply bg-blush-200 text-ink;
+  }
+
+  /* Respect users who prefer less motion. */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
+}
+
+@layer components {
+  .section-shell {
+    @apply mx-auto w-full max-w-5xl px-5 sm:px-8;
+  }
+
+  .card {
+    @apply rounded-3xl border border-gold-200/70 bg-ivory/80 p-6 shadow-card backdrop-blur-sm sm:p-8;
+  }
+
+  .heading {
+    @apply text-3xl leading-tight sm:text-4xl;
+  }
+
+  html[lang='ar'] .heading {
+    @apply font-arabicDisplay font-bold;
+  }
+
+  html[lang='en'] .heading {
+    @apply font-display font-medium tracking-wide;
+  }
+
+  .eyebrow {
+    @apply text-xs uppercase tracking-[0.35em] text-gold-500;
+  }
+
+  .divider-ornament {
+    @apply flex items-center justify-center gap-3 text-gold-400;
+  }
+
+  .divider-ornament::before,
+  .divider-ornament::after {
+    content: '';
+    @apply h-px w-16 bg-gradient-to-r from-transparent via-gold-300 to-transparent sm:w-24;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-gold-500 px-6 py-3 text-sm font-semibold text-ivory shadow-soft transition hover:bg-gold-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold-600 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-gold-300 bg-ivory/70 px-5 py-2.5 text-sm font-semibold text-gold-600 transition hover:bg-gold-200/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold-500;
+  }
+
+  .field {
+    @apply w-full rounded-2xl border border-gold-200 bg-ivory px-4 py-3 text-sm text-ink placeholder:text-ink/40 focus:border-gold-400 focus:outline-none focus:ring-2 focus:ring-gold-200;
+  }
+}
+
+/* Falling petals / hearts in the hero. */
+.petal {
+  position: absolute;
+  top: 0;
+  animation-name: fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  pointer-events: none;
+  will-change: transform, opacity;
+}

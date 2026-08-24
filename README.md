@@ -66,6 +66,28 @@ VITE_SUPABASE_ANON_KEY=eyJhbGciOi...
 
 ## 3) النشر (مجانًا)
 
+الموقع منشور على Cloudflare Pages ومربوط بدومين `ayman-gamal.com`.
+
+### Cloudflare Pages (المستخدم حاليًا)
+
+1. من لوحة Cloudflare: **Workers & Pages → Create → Pages → Connect to Git**.
+2. اختر مستودع `aymangam1/wedding-invitation` والفرع `main`.
+3. إعدادات البناء:
+   - Framework preset: **Vite**
+   - Build command: `npm run build`
+   - Build output directory: `dist`
+4. أضف متغيّرات البيئة `VITE_SUPABASE_URL` و `VITE_SUPABASE_ANON_KEY` (لبيئة Production و Preview).
+5. بعد أول نشر: **Custom domains → Set up a custom domain** واكتب `ayman-gamal.com`. لأن الدومين على Cloudflare أصلاً، سجلات DNS تُضاف تلقائيًا.
+
+بعد كده أي `git push` على `main` يعيد النشر تلقائيًا.
+
+للنشر اليدوي من الجهاز بدون ربط Git:
+
+```bash
+npm run build
+npx wrangler pages deploy dist --project-name=wedding-invitation
+```
+
 ### Vercel
 
 1. ارفع المشروع على GitHub.

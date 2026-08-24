@@ -43,6 +43,10 @@ export function Guestbook() {
     setWishes((prev) => (prev.some((wish) => wish.id === incoming.id) ? prev : [incoming, ...prev]))
   }, [])
 
+  const dropWish = useCallback((id: string) => {
+    setWishes((prev) => prev.filter((wish) => wish.id !== id))
+  }, [])
+
   useEffect(() => {
     let active = true
 
@@ -58,13 +62,13 @@ export function Guestbook() {
         if (active) setLoading(false)
       })
 
-    const unsubscribe = subscribeToWishes(mergeWish)
+    const unsubscribe = subscribeToWishes({ onInsert: mergeWish, onDelete: dropWish })
 
     return () => {
       active = false
       unsubscribe()
     }
-  }, [mergeWish])
+  }, [mergeWish, dropWish])
 
   useEffect(
     () => () => {

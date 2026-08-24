@@ -14,7 +14,11 @@ create index if not exists wishes_created_at_idx on public.wishes (created_at de
 alter table public.wishes enable row level security;
 
 -- Guests are anonymous, so the browser key may read and insert, nothing else.
+-- Supabase grants every privilege on new public tables by default, so the
+-- revoke matters: row level security already blocks edits and deletes, and
+-- dropping the privileges means no future policy can accidentally allow them.
 grant select, insert on public.wishes to anon, authenticated;
+revoke update, delete, truncate on public.wishes from anon, authenticated;
 
 drop policy if exists "wishes are readable by everyone" on public.wishes;
 create policy "wishes are readable by everyone"

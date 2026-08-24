@@ -70,8 +70,14 @@ export async function addWish(input: { name: string; message: string }): Promise
   return data as Wish
 }
 
-/** Streams newly posted wishes; returns a cleanup function. */
-export function subscribeToWishes(onInsert: (wish: Wish) => void): () => void {
+type WishEvents = {
+  onInsert: (wish: Wish) => void
+  /** Fires when a wish is removed in the dashboard, so open pages drop it too. */
+  onDelete: (id: string) => void
+}
+
+/** Streams wish changes to every open page; returns a cleanup function. */
+export function subscribeToWishes({ onInsert, onDelete }: WishEvents): () => void {
   const client = supabase
   if (!client) return () => undefined
 
@@ -81,6 +87,15 @@ export function subscribeToWishes(onInsert: (wish: Wish) => void): () => void {
       'postgres_changes',
       { event: 'INSERT', schema: 'public', table: TABLE },
       (payload) => onInsert(payload.new as Wish),
+    )
+    .on(
+      'postgres_changes',
+      { event: 'DELETE', schema: 'public', table: TABLE },
+      // Delete payloads only carry the primary key unless replica identity is full.
+      (payload) => {
+        const id = (payload.old as Partial<Wish>).id
+        if (id) onDelete(id)
+      },
     )
     .subscribe()
 

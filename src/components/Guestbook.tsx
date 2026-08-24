@@ -239,6 +239,9 @@ export function Guestbook() {
                     <motion.li
                       key={wish.id}
                       layout
+                      // Without this a grid item is sized to its longest word, and one
+                      // unbroken run of emoji stretches every card past the screen.
+                      className="min-w-0"
                       initial={{ opacity: 0, y: 16, scale: 0.98 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0 }}
@@ -273,7 +276,7 @@ function WishCard({ wish, isArabic }: { wish: Wish; isArabic: boolean }) {
         </div>
       </div>
       <p
-        className={`mt-4 whitespace-pre-line break-words text-sm leading-relaxed text-ink/80 ${isArabic ? 'font-arabic' : ''}`}
+        className={`mt-4 whitespace-pre-line [overflow-wrap:anywhere] text-sm leading-relaxed text-ink/80 ${isArabic ? 'font-arabic' : ''}`}
       >
         {wish.message}
       </p>

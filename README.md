@@ -44,15 +44,21 @@ npm run preview    # معاينة النسخة النهائية محليًا
 
 1. أنشئ مشروعًا مجانيًا جديدًا على Supabase.
 2. من **SQL Editor**، الصق محتوى [`supabase/schema.sql`](supabase/schema.sql) واضغط Run.
-3. من **Project Settings → API** انسخ `Project URL` و `anon public key`.
+3. انسخ القيمتين:
+   - **Project URL** من **Project Settings → Data API**
+   - **Publishable key** (`sb_publishable_...`) من **Project Settings → API Keys**
 4. أنشئ ملف `.env` في جذر المشروع (انسخه من [`.env.example`](.env.example)):
 
 ```env
 VITE_SUPABASE_URL=https://xxxxxxxxxxxx.supabase.co
-VITE_SUPABASE_ANON_KEY=eyJhbGciOi...
+VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
 ```
 
 5. أعد تشغيل `npm run dev`.
+
+> **مفتاح واحد بس هو الصح:** استخدم **Publishable key** المخصص للمتصفح. أما **Secret key** (`sb_secret_...`) فهو يتجاوز كل سياسات الأمان ولا يوضع في الموقع أو في المستودع أبدًا.
+>
+> الاسم القديم `VITE_SUPABASE_ANON_KEY` ما زال مقبولًا في الكود لمن يستخدم المفتاح القديم `anon`.
 
 **قبل إضافة المفاتيح:** سجل التهاني يعمل في وضع احتياطي ويحفظ التعليقات على جهاز الزائر فقط، مع تنبيه واضح في الصفحة. بمجرد إضافة المفاتيح يتحوّل تلقائيًا إلى قاعدة البيانات — بدون أي تعديل في الكود.
 
@@ -79,7 +85,9 @@ VITE_SUPABASE_ANON_KEY=eyJhbGciOi...
 
 ملف [`wrangler.jsonc`](wrangler.jsonc) هو اللي يحدّد إن مجلد `dist` يُنشر كأصول ثابتة (Static Assets). بدونه يحاول wrangler اكتشاف إعدادات Vite تلقائيًا ويفشل النشر.
 
-متغيّرات البيئة `VITE_SUPABASE_URL` و `VITE_SUPABASE_ANON_KEY` تُضاف من **Settings → Variables and Secrets** لبيئتي Production و Preview، ثم **Retry deployment**.
+متغيّرات البيئة تُضاف من **Settings → Build → Build variables and secrets** — وليس من `Runtime variables and secrets`. لأن Vite يحقن قيم `VITE_*` وقت البناء، فالمتغيّرات لازم تكون متاحة لخطوة البناء لا لوقت التشغيل. (متغيّرات وقت التشغيل غير متاحة أصلاً لـ Worker يقدّم أصولًا ثابتة فقط.)
+
+بعد إضافتها اعمل **Retry deployment** أو ارفع commit جديد، لأن القيم لا تدخل الموقع إلا في بناء جديد.
 
 الدومين يُربط من **Settings → Domains & Routes → Add → Custom domain** وتكتب `ayman-gamal.com`. لأن الدومين على Cloudflare أصلاً، سجلات DNS تُضاف تلقائيًا.
 

@@ -18,13 +18,12 @@ export function Hero() {
 
   return (
     <section id="hero" className="relative isolate flex min-h-[100svh] items-center justify-center overflow-hidden">
-      {/* Photo backdrop waits on the real hero image; the cream wash stands in. */}
       <div
         className="absolute inset-0 -z-10 bg-cream bg-cover bg-center"
-        // style={{ backgroundImage: `url(${wedding.heroImage})` }}
+        style={{ backgroundImage: `url(${wedding.heroImage})` }}
       />
-      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-cream/95 via-cream/85 to-cream" />
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_center,rgba(255,253,249,0.35),rgba(253,249,243,0.9))]" />
+      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-cream/70 via-cream/55 to-cream/90" />
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_center,rgba(255,253,249,0.12),rgba(253,249,243,0.6))]" />
 
       <Petals />
 

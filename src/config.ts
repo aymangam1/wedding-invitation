@@ -36,7 +36,7 @@ export const wedding = {
     '/assets/images/couple-4.jpg',
   ],
 
-  heroImage: '/assets/images/hero.jpg',
+  heroImage: '/assets/images/hero.jpeg',
 } as const
 
 export function mapsEmbedUrl(): string {

@@ -50,9 +50,11 @@ npm run preview    # معاينة النسخة النهائية محليًا
 4. أنشئ ملف `.env` في جذر المشروع (انسخه من [`.env.example`](.env.example)):
 
 ```env
-VITE_SUPABASE_URL=https://xxxxxxxxxxxx.supabase.co
+VITE_SUPABASE_URL=https://xxxxxxxxxxxxxxxxxxxx.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
 ```
+
+> صفحة **Data API** تعرض عنوان REST كامل مثل `https://<ref>.supabase.co/rest/v1/`. المطلوب هو الجزء الأساسي فقط بدون `/rest/v1/` — والكود يقصّه تلقائيًا إن نُسخ بالكامل.
 
 5. أعد تشغيل `npm run dev`.
 

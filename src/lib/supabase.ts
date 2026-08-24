@@ -1,7 +1,17 @@
 import { createClient } from '@supabase/supabase-js'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
-const url = import.meta.env.VITE_SUPABASE_URL?.trim()
+/**
+ * The Supabase dashboard shows the REST endpoint (`.../rest/v1/`), but the
+ * client expects the project root and would otherwise build paths like
+ * `/rest/v1/rest/v1/wishes`. Accept either form.
+ */
+function projectRoot(raw: string | undefined): string | undefined {
+  const trimmed = raw?.trim().replace(/\/+$/, '')
+  return trimmed ? trimmed.replace(/\/rest\/v\d+$/, '') : undefined
+}
+
+const url = projectRoot(import.meta.env.VITE_SUPABASE_URL)
 
 // Supabase renamed the browser-safe key from "anon" to "publishable"; accept either.
 const publishableKey =

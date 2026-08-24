@@ -87,6 +87,7 @@ export const translations = {
       play: 'تشغيل الموسيقى',
       mute: 'كتم الموسيقى',
       unavailable: 'ملف الموسيقى غير متوفر',
+      hint: 'اضغط لتشغيل الموسيقى',
     },
 
     share: {
@@ -192,6 +193,7 @@ export const translations = {
       play: 'Play music',
       mute: 'Mute music',
       unavailable: 'Music file is not available',
+      hint: 'Tap to play the music',
     },
 
     share: {
